@@ -1,4 +1,4 @@
-package database
+package org.delcom.database
 
 import org.jetbrains.exposed.dao.id.IntIdTable
 

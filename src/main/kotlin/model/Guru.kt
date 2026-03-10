@@ -1,4 +1,4 @@
-package model
+package org.delcom.model
 
 import kotlinx.serialization.Serializable
 

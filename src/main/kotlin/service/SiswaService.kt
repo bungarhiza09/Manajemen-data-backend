@@ -1,7 +1,7 @@
-package service
+package org.delcom.service
 
-import model.Siswa
-import repository.SiswaRepository
+import org.delcom.model.Siswa
+import org.delcom.repository.SiswaRepository
 
 class SiswaService {
 
@@ -17,4 +17,9 @@ class SiswaService {
 
     fun delete(id: Int) = repo.delete(id)
 
+    fun getRaporFile(id: Int) = repo.getRaporFile(id)
+
+    fun getSklFile(id: Int) = repo.getSklFile(id)
+
+    fun getIjazahFile(id: Int) = repo.getIjazahFile(id)
 }

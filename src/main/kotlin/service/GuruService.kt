@@ -1,7 +1,7 @@
-package service
+package org.delcom.service
 
-import model.Guru
-import repository.GuruRepository
+import org.delcom.model.Guru
+import org.delcom.repository.GuruRepository
 
 class GuruService {
 

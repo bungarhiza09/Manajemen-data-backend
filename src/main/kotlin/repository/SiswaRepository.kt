@@ -1,9 +1,11 @@
-package repository
+package org.delcom.repository
 
-import database.SiswaTable
-import model.Siswa
+import org.delcom.database.SiswaTable
+import org.delcom.model.Siswa
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.deleteWhere
 
 class SiswaRepository {
 
@@ -24,7 +26,10 @@ class SiswaRepository {
     }
 
     fun getById(id: Int): Siswa? = transaction {
-        SiswaTable.select { SiswaTable.id eq id }
+
+        SiswaTable
+            .selectAll()
+            .where { SiswaTable.id eq id }
             .map {
                 Siswa(
                     id = it[SiswaTable.id].value,
@@ -37,7 +42,9 @@ class SiswaRepository {
                     alamat = it[SiswaTable.alamat],
                     no_wa_ortu = it[SiswaTable.no_wa_ortu]
                 )
-            }.singleOrNull()
+            }
+            .singleOrNull()
+
     }
 
     fun create(siswa: Siswa) = transaction {
@@ -67,6 +74,34 @@ class SiswaRepository {
     }
 
     fun delete(id: Int) = transaction {
-        SiswaTable.deleteWhere { SiswaTable.id eq id }
+        SiswaTable.deleteWhere {
+            SiswaTable.id eq id
+        }
+    }
+
+    fun getRaporFile(id: Int): String? = transaction {
+        SiswaTable
+            .selectAll()
+            .where { SiswaTable.id eq id }
+            .map { it[SiswaTable.rapor_file] }
+            .singleOrNull()
+    }
+
+    fun getSklFile(id: Int): String? = transaction {
+        SiswaTable
+            .selectAll()
+            .where { SiswaTable.id eq id }
+            .map { it[SiswaTable.skl_file] }
+            .singleOrNull()
+    }
+
+    fun getIjazahFile(id: Int): String? = transaction {
+
+        SiswaTable
+            .selectAll()
+            .where { SiswaTable.id eq id }
+            .map { it[SiswaTable.ijazah_file] }
+            .singleOrNull()
+
     }
 }

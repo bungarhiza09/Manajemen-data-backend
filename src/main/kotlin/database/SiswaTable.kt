@@ -1,4 +1,4 @@
-package database
+package org.delcom.database
 
 import org.jetbrains.exposed.dao.id.IntIdTable
 
@@ -13,4 +13,8 @@ object SiswaTable : IntIdTable("siswa") {
     val alamat = text("alamat")
     val no_wa_ortu = varchar("no_wa_ortu", 20)
 
+    // dokumen siswa
+    val rapor_file = varchar("rapor_file", 255).nullable()
+    val skl_file = varchar("skl_file", 255).nullable()
+    val ijazah_file = varchar("ijazah_file", 255).nullable()
 }

@@ -1,8 +1,9 @@
-package repository
+package org.delcom.repository
 
-import database.GuruTable
-import model.Guru
+import org.delcom.database.GuruTable
+import org.delcom.model.Guru
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class GuruRepository {
@@ -22,7 +23,10 @@ class GuruRepository {
     }
 
     fun getById(id: Int): Guru? = transaction {
-        GuruTable.select { GuruTable.id eq id }
+
+        GuruTable
+            .selectAll()
+            .where { GuruTable.id eq id }
             .map {
                 Guru(
                     id = it[GuruTable.id].value,
@@ -33,7 +37,9 @@ class GuruRepository {
                     mata_pelajaran = it[GuruTable.mata_pelajaran],
                     alamat = it[GuruTable.alamat]
                 )
-            }.singleOrNull()
+            }
+            .singleOrNull()
+
     }
 
     fun create(guru: Guru) = transaction {
