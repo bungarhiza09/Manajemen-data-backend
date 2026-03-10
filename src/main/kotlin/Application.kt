@@ -5,4 +5,7 @@ import io.ktor.server.application.*
 
 fun Application.module() {
     appModule()
+    configureSerialization()
+    configureRouting()
+
 }
