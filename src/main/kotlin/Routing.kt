@@ -158,36 +158,7 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.OK, "Siswa berhasil dihapus")
             }
 
-            //-------------------------
-            // DOKUMEN SISWA
-            //-------------------------
 
-            get("/{id}/rapor") {
-
-                val id = call.parameters["id"]!!.toInt()
-
-                val file = siswaService.getRaporFile(id)
-
-                call.respondFile(file)
-            }
-
-            get("/{id}/skl") {
-
-                val id = call.parameters["id"]!!.toInt()
-
-                val file = siswaService.getSklFile(id)
-
-                call.respondFile(file)
-            }
-
-            get("/{id}/ijazah") {
-
-                val id = call.parameters["id"]!!.toInt()
-
-                val file = siswaService.getIjazahFile(id)
-
-                call.respondFile(file)
-            }
         }
     }
 }
