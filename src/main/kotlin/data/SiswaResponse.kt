@@ -13,6 +13,7 @@ data class SiswaResponse(
     val tanggalLahir: String,
     val alamat: String,
     val noWaOrtu: String,
+    val status: String,
 
     // dokumen
     val raporFile: String?,

@@ -13,6 +13,7 @@ data class Siswa(
     val tanggalLahir: String,
     val alamat: String,
     val noWaOrtu: String,
+    val status: String,
     val raporFile: String?,
     val sklFile: String?,
     val ijazahFile: String?

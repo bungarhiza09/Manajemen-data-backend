@@ -13,6 +13,7 @@ data class SiswaRequest(
     var tanggalLahir: String = "",
     var alamat: String = "",
     var noWaOrtu: String = "",
+    var status: String = "",
     var raporFile: String? = null,
     var sklFile: String? = null,
     var ijazahFile: String? = null
@@ -28,6 +29,7 @@ data class SiswaRequest(
             "tanggalLahir" to tanggalLahir,
             "alamat" to alamat,
             "noWaOrtu" to noWaOrtu,
+            "status" to status,
             "raporFile" to raporFile,
             "sklFile" to sklFile,
             "ijazahFile" to ijazahFile
@@ -45,6 +47,7 @@ data class SiswaRequest(
             tanggalLahir = tanggalLahir,
             alamat = alamat,
             noWaOrtu = noWaOrtu,
+            status = status,
             raporFile = raporFile,
             sklFile = sklFile,
             ijazahFile = ijazahFile

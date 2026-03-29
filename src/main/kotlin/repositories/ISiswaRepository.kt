@@ -1,6 +1,7 @@
 package org.delcom.repositories
 
 import org.delcom.entities.Siswa
+import org.delcom.helpers.suspendTransaction
 
 interface ISiswaRepository {
 
@@ -20,6 +21,7 @@ interface ISiswaRepository {
         tanggalLahir: String,
         alamat: String,
         noWaOrtu: String,
+        status: String,
         raporFile: String?,
         sklFile: String?,
         ijazahFile: String?
@@ -34,4 +36,6 @@ interface ISiswaRepository {
         limit: Int,
         offset: Long
     ): List<Siswa>
+
+    suspend fun getStats(): Map<String, Int>
 }

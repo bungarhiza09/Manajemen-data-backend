@@ -26,6 +26,8 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("org.postgresql:postgresql:42.7.9")
     implementation("com.h2database:h2:2.3.232")
     implementation("org.jetbrains.exposed:exposed-core:0.61.0")
@@ -48,4 +50,5 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-core:0.50.1")
     implementation("org.jetbrains.exposed:exposed-dao:0.50.1")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.50.1")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
 }

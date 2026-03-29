@@ -31,6 +31,7 @@ class SiswaRepository : ISiswaRepository {
             tanggalLahir = siswa.tanggalLahir
             alamat = siswa.alamat
             noWaOrtu = siswa.noWaOrtu
+            status = siswa.status
             raporFile = siswa.raporFile
             sklFile = siswa.sklFile
             ijazahFile = siswa.ijazahFile
@@ -48,6 +49,7 @@ class SiswaRepository : ISiswaRepository {
         tanggalLahir: String,
         alamat: String,
         noWaOrtu: String,
+        status: String,
         raporFile: String?,
         sklFile: String?,
         ijazahFile: String?
@@ -64,6 +66,7 @@ class SiswaRepository : ISiswaRepository {
         siswa.tanggalLahir = tanggalLahir
         siswa.alamat = alamat
         siswa.noWaOrtu = noWaOrtu
+        siswa.status = status
         siswa.raporFile = raporFile
         siswa.sklFile = sklFile
         siswa.ijazahFile = ijazahFile
@@ -120,5 +123,24 @@ class SiswaRepository : ISiswaRepository {
             .drop(offset.toInt())
             .take(limit)
             .map { siswaDAOToModel(it) }
+    }
+
+    override suspend fun getStats(): Map<String, Int> = suspendTransaction {
+
+        val total = SiswaDAO.all().count().toInt()
+
+        val aktif = SiswaDAO.find {
+            SiswaTable.status eq "aktif"
+        }.count().toInt()
+
+        val lulus = SiswaDAO.find {
+            SiswaTable.status eq "lulus"
+        }.count().toInt()
+
+        mapOf(
+            "total" to total,
+            "aktif" to aktif,
+            "lulus" to lulus
+        )
     }
 }

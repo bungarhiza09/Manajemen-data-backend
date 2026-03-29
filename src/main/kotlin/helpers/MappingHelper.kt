@@ -26,6 +26,8 @@ fun siswaDAOToModel(dao: SiswaDAO) = Siswa(
     tanggalLahir = dao.tanggalLahir,
     alamat = dao.alamat,
     noWaOrtu = dao.noWaOrtu,
+    status = dao.status,
+
     raporFile = dao.raporFile,
     sklFile = dao.sklFile,
     ijazahFile = dao.ijazahFile

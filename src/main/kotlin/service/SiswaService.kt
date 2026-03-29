@@ -38,6 +38,7 @@ class SiswaService(
             request.tanggalLahir,
             request.alamat,
             request.noWaOrtu,
+            request.status,
             request.raporFile,
             request.sklFile,
             request.ijazahFile
@@ -211,5 +212,18 @@ class SiswaService(
         )
 
         call.respondFile(file)
+    }
+
+    suspend fun getStats(call: ApplicationCall) {
+
+        val stats = siswaRepository.getStats()
+
+        call.respond(
+            DataResponse(
+                status = "success",
+                message = "Berhasil ambil statistik",
+                data = stats
+            )
+        )
     }
 }

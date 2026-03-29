@@ -113,6 +113,10 @@ fun Application.configureRouting() {
             get("/{id}/download/{type}") {
                 siswaService.download(call)
             }
+
+            get("/stats") {
+                siswaService.getStats(call)
+            }
         }
     }
 }

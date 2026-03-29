@@ -16,6 +16,7 @@ class SiswaDAO(id: EntityID<Int>) : IntEntity(id) {
     var tanggalLahir by SiswaTable.tanggal_lahir
     var alamat by SiswaTable.alamat
     var noWaOrtu by SiswaTable.no_wa_ortu
+    var status by SiswaTable.status
 
     var raporFile by SiswaTable.rapor_file
     var sklFile by SiswaTable.skl_file

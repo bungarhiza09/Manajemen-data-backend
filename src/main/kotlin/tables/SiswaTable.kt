@@ -12,6 +12,7 @@ object SiswaTable : IntIdTable("siswa") {
     val tanggal_lahir = varchar("tanggal_lahir", 20)
     val alamat = text("alamat")
     val no_wa_ortu = varchar("no_wa_ortu", 20)
+    val status = varchar("status", 20) // aktif / lulus / nonaktif
 
     // dokumen siswa
     val rapor_file = varchar("rapor_file", 255).nullable()
