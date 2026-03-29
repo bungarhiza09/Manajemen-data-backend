@@ -117,6 +117,10 @@ fun Application.configureRouting() {
             get("/stats") {
                 siswaService.getStats(call)
             }
+
+            get("/export") {
+                siswaService.exportExcel(call)
+            }
         }
     }
 }

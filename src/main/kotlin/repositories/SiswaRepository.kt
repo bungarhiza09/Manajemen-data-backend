@@ -143,4 +143,8 @@ class SiswaRepository : ISiswaRepository {
             "lulus" to lulus
         )
     }
+
+    override suspend fun getAllForExport(): List<SiswaDAO> = suspendTransaction {
+        SiswaDAO.all().toList()
+    }
 }

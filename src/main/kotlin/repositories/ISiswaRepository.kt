@@ -1,5 +1,6 @@
 package org.delcom.repositories
 
+import org.delcom.dao.SiswaDAO
 import org.delcom.entities.Siswa
 import org.delcom.helpers.suspendTransaction
 
@@ -38,4 +39,6 @@ interface ISiswaRepository {
     ): List<Siswa>
 
     suspend fun getStats(): Map<String, Int>
+
+    suspend fun getAllForExport(): List<SiswaDAO>
 }

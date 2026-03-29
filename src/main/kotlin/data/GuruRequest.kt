@@ -33,6 +33,6 @@ data class GuruRequest(
             anakWali = anakWali,
             mataPelajaran = mataPelajaran,
             alamat = alamat
-        ) 
+        )
     }
 }

@@ -1,5 +1,7 @@
 package org.delcom.service
 
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -8,6 +10,10 @@ import org.delcom.entities.Siswa
 import org.delcom.helpers.ValidatorHelper
 import org.delcom.repositories.SiswaRepository
 import java.io.File
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import java.io.ByteArrayOutputStream
+import io.ktor.http.*
+import io.ktor.server.response.*
 
 class SiswaService(
     private val siswaRepository: SiswaRepository
@@ -224,6 +230,43 @@ class SiswaService(
                 message = "Berhasil ambil statistik",
                 data = stats
             )
+        )
+    }
+
+    suspend fun exportExcel(call: ApplicationCall) {
+
+        val data = siswaRepository.getAllForExport()
+
+        val workbook = XSSFWorkbook()
+        val sheet = workbook.createSheet("Data Siswa")
+
+        // HEADER
+        val header = sheet.createRow(0)
+        header.createCell(0).setCellValue("NISN")
+        header.createCell(1).setCellValue("Nama")
+        header.createCell(2).setCellValue("Kelas")
+        header.createCell(3).setCellValue("Jurusan")
+        header.createCell(4).setCellValue("Status")
+
+        // DATA
+        data.forEachIndexed { index, siswa ->
+            val row = sheet.createRow(index + 1)
+
+            row.createCell(0).setCellValue(siswa.nisn)
+            row.createCell(1).setCellValue(siswa.namaLengkap)
+            row.createCell(2).setCellValue(siswa.kelas)
+            row.createCell(3).setCellValue(siswa.jurusan)
+            row.createCell(4).setCellValue(siswa.status)
+        }
+
+        val outputStream = ByteArrayOutputStream()
+        workbook.write(outputStream)
+        workbook.close()
+
+        call.respondBytes(
+            bytes = outputStream.toByteArray(),
+            contentType = ContentType.Application.OctetStream,
+            status = HttpStatusCode.OK
         )
     }
 }
