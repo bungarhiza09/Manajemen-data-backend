@@ -2,18 +2,47 @@ package org.delcom
 
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.request.receive
+import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.delcom.data.AppException
+import org.delcom.data.ErrorResponse
+import org.delcom.helpers.parseMessageToMap
 import org.delcom.service.GuruService
 import org.delcom.service.SiswaService
 import org.koin.ktor.ext.inject
-import io.ktor.server.request.*
 
 fun Application.configureRouting() {
 
     val guruService: GuruService by inject()
     val siswaService: SiswaService by inject()
+
+    install(StatusPages) {
+
+        exception<AppException> { call, cause ->
+            val dataMap = parseMessageToMap(cause.message)
+
+            call.respond(
+                status = HttpStatusCode.fromValue(cause.code),
+                message = ErrorResponse(
+                    status = "fail",
+                    message = if (dataMap.isEmpty()) cause.message else "Data tidak valid",
+                    data = if (dataMap.isEmpty()) null else dataMap.toString()
+                )
+            )
+        }
+
+        exception<Throwable> { call, cause ->
+            call.respond(
+                status = HttpStatusCode.InternalServerError,
+                message = ErrorResponse(
+                    status = "error",
+                    message = cause.message ?: "Unknown error",
+                    data = ""
+                )
+            )
+        }
+    }
 
     routing {
 
@@ -21,144 +50,69 @@ fun Application.configureRouting() {
             call.respondText("API Sistem Informasi SMKN 3 Balige Berjalan")
         }
 
-        //-----------------------------
+        // =========================
         // GURU
-        //-----------------------------
+        // =========================
         route("/guru") {
 
             get {
-                val data = guruService.getAll()
-                call.respond(data)
+                guruService.getAll(call)
+            }
+
+            get("/search") {
+                guruService.search(call)
             }
 
             get("/{id}") {
-
-                val id = call.parameters["id"]?.toIntOrNull()
-
-                if (id == null) {
-                    call.respond(HttpStatusCode.BadRequest, "ID tidak valid")
-                    return@get
-                }
-
-                val guru = guruService.getById(id)
-
-                if (guru == null) {
-                    call.respond(HttpStatusCode.NotFound, "Guru tidak ditemukan")
-                } else {
-                    call.respond(guru)
-                }
+                guruService.getById(call)
             }
 
             post {
-
-                val guru = call.receive<Guru>()
-
-                val result = guruService.create(guru)
-
-                call.respond(HttpStatusCode.Created, result)
+                guruService.post(call)
             }
 
             put("/{id}") {
-
-                val id = call.parameters["id"]?.toIntOrNull()
-
-                if (id == null) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@put
-                }
-
-                val guru = call.receive<Guru>()
-
-                val result = guruService.update(id, guru)
-
-                call.respond(result)
+                guruService.put(call)
             }
 
             delete("/{id}") {
-
-                val id = call.parameters["id"]?.toIntOrNull()
-
-                if (id == null) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@delete
-                }
-
-                guruService.delete(id)
-
-                call.respond(HttpStatusCode.OK, "Guru berhasil dihapus")
+                guruService.delete(call)
             }
         }
 
-        //-----------------------------
+        // =========================
         // SISWA
-        //-----------------------------
+        // =========================
         route("/siswa") {
 
             get {
+                siswaService.getAll(call)
+            }
 
-                val data = siswaService.getAll()
-
-                call.respond(data)
+            get("/search") {
+                siswaService.search(call)
             }
 
             get("/{id}") {
-
-                val id = call.parameters["id"]?.toIntOrNull()
-
-                if (id == null) {
-                    call.respond(HttpStatusCode.BadRequest, "ID tidak valid")
-                    return@get
-                }
-
-                val siswa = siswaService.getById(id)
-
-                if (siswa == null) {
-                    call.respond(HttpStatusCode.NotFound, "Data tidak ditemukan")
-                } else {
-                    call.respond(siswa)
-                }
+                siswaService.getById(call)
             }
 
             post {
-
-                val siswa = call.receive<Siswa>()
-
-                val result = siswaService.create(siswa)
-
-                call.respond(HttpStatusCode.Created, result)
+                siswaService.post(call)
             }
 
             put("/{id}") {
-
-                val id = call.parameters["id"]?.toIntOrNull()
-
-                if (id == null) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@put
-                }
-
-                val siswa = call.receive<Siswa>()
-
-                val result = siswaService.update(id, siswa)
-
-                call.respond(result)
+                siswaService.put(call)
             }
 
             delete("/{id}") {
-
-                val id = call.parameters["id"]?.toIntOrNull()
-
-                if (id == null) {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@delete
-                }
-
-                siswaService.delete(id)
-
-                call.respond(HttpStatusCode.OK, "Siswa berhasil dihapus")
+                siswaService.delete(call)
             }
 
-
+            // 🔥 DOWNLOAD FILE
+            get("/{id}/download/{type}") {
+                siswaService.download(call)
+            }
         }
     }
 }

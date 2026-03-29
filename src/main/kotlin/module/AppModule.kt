@@ -1,32 +1,28 @@
 package org.delcom.module
 
-import org.delcom.database.DatabaseFactory
-import io.ktor.server.application.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.routing.*
-import org.delcom.routes.guruRoutes
-import org.delcom.routes.siswaRoutes
+import org.delcom.repositories.GuruRepository
+import org.delcom.repositories.SiswaRepository
+import org.delcom.services.GuruService
+import org.delcom.services.SiswaService
+import org.koin.dsl.module
 
-fun Application.appModule() {
+val appModule = module {
 
-    // Initialize database
-    DatabaseFactory.init()
-
-    // Install JSON serialization
-    install(ContentNegotiation) {
-        json()
+    // ===== SISWA =====
+    single {
+        SiswaRepository()
     }
 
-    // Routing API
-    routing {
+    single {
+        SiswaService(get())
+    }
 
-        route("/api") {
+    // ===== GURU =====
+    single {
+        GuruRepository()
+    }
 
-            guruRoutes()
-            siswaRoutes()
-
-        }
-
+    single {
+        GuruService(get())
     }
 }
