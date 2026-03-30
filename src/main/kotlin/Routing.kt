@@ -78,6 +78,11 @@ fun Application.configureRouting() {
             delete("/{id}") {
                 guruService.delete(call)
             }
+
+            get("/total") {
+                val total = guruService.getTotalGuru()
+                call.respond(mapOf("total" to total))
+            }
         }
 
         // =========================

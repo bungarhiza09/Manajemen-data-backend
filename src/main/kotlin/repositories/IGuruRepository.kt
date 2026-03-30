@@ -30,4 +30,6 @@ interface IGuruRepository {
         limit: Int,
         offset: Long
     ): List<Guru>
+
+    suspend fun getTotalGuru(): Long
 }

@@ -113,4 +113,8 @@ class GuruRepository : IGuruRepository {
             .take(limit)
             .map { guruDAOToModel(it) }
     }
+
+    override suspend fun getTotalGuru(): Long = suspendTransaction {
+        GuruDAO.all().count()
+    }
 }

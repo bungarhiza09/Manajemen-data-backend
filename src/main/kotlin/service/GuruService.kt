@@ -200,4 +200,8 @@ class GuruService(
             )
         )
     }
+
+    suspend fun getTotalGuru(): Long {
+        return guruRepository.getTotalGuru()
+    }
 }
