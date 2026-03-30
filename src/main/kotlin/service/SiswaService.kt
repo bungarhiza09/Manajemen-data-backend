@@ -90,7 +90,7 @@ class SiswaService(
                 status = "success",
                 message = "Berhasil mengambil data siswa",
                 data = SiswaListResponse(
-                    posts = siswaWithMeta,
+                    siswa = siswaWithMeta,
                     limit = limit,
                     offset = offset,
                     hasMore = hasMore

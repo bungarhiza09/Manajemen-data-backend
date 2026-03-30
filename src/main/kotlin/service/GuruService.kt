@@ -51,17 +51,29 @@ class GuruService(
 
         val guruList = guruRepository.getAll(limit, offset)
 
+        val guruWithMeta = guruList.map { guru ->
+            GuruResponse(
+                id = guru.id,
+                namaLengkap = guru.namaLengkap,
+                nip = guru.nip,
+                noTelepon = guru.noTelepon,
+                anakWali = guru.anakWali,
+                mataPelajaran = guru.mataPelajaran,
+                alamat = guru.alamat
+            )
+        }
+
         val hasMore = guruList.size == limit
 
         call.respond(
             DataResponse(
                 status = "success",
                 message = "Berhasil mengambil data guru",
-                data = mapOf(
-                    "guru" to guruList,
-                    "limit" to limit,
-                    "offset" to offset,
-                    "hasMore" to hasMore
+                data = GuruListResponse(
+                    guru = guruWithMeta,
+                    limit = limit,
+                    offset = offset,
+                    hasMore = hasMore
                 )
             )
         )
@@ -165,11 +177,23 @@ class GuruService(
             offset
         )
 
+        val guruWithMeta = data.map { guru ->
+            GuruResponse(
+                id = guru.id,
+                namaLengkap = guru.namaLengkap,
+                nip = guru.nip,
+                noTelepon = guru.noTelepon,
+                anakWali = guru.anakWali,
+                mataPelajaran = guru.mataPelajaran,
+                alamat = guru.alamat
+            )
+        }
+
         call.respond(
             DataResponse(
                 status = "success",
                 message = "Berhasil mencari data",
-                data = mapOf("guru" to data)
+                data = mapOf("guru" to guruWithMeta)
             )
         )
     }
