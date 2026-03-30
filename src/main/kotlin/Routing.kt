@@ -75,13 +75,12 @@ fun Application.configureRouting() {
                 guruService.put(call)
             }
 
+            get("/total") {
+                guruService.getTotalGuru(call)
+            }
+            
             delete("/{id}") {
                 guruService.delete(call)
-            }
-
-            get("/total") {
-                val total = guruService.getTotalGuru()
-                call.respond(mapOf("total" to total))
             }
         }
 
