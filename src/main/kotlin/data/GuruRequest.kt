@@ -10,7 +10,8 @@ data class GuruRequest(
     var noTelepon: String = "",
     var anakWali: String = "",
     var mataPelajaran: String = "",
-    var alamat: String = ""
+    var alamat: String = "",
+    var jabatan: String = ""
 ) {
 
     fun toMap(): Map<String, Any?> {
@@ -32,7 +33,8 @@ data class GuruRequest(
             noTelepon = noTelepon,
             anakWali = anakWali,
             mataPelajaran = mataPelajaran,
-            alamat = alamat
+            alamat = alamat,
+            jabatan = jabatan
         )
     }
 }

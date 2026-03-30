@@ -14,4 +14,5 @@ class GuruDAO(id: EntityID<Int>) : IntEntity(id) {
     var anakWali by GuruTable.anak_wali
     var mataPelajaran by GuruTable.mata_pelajaran
     var alamat by GuruTable.alamat
+    var jabatan by GuruTable.jabatan
 }

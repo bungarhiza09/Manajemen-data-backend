@@ -17,7 +17,8 @@ interface IGuruRepository {
         noTelepon: String,
         anakWali: String,
         mataPelajaran: String,
-        alamat: String
+        alamat: String,
+        jabatan: String
     ): Boolean
 
     suspend fun delete(id: String): Boolean

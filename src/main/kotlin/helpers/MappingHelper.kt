@@ -40,5 +40,6 @@ fun guruDAOToModel(dao: GuruDAO) = Guru(
     noTelepon = dao.noTelepon,
     anakWali = dao.anakWali,
     mataPelajaran = dao.mataPelajaran,
-    alamat = dao.alamat
+    alamat = dao.alamat,
+    jabatan = dao.jabatan,
 )

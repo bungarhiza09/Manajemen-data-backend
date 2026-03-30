@@ -29,6 +29,7 @@ class GuruRepository : IGuruRepository {
             anakWali = guru.anakWali
             mataPelajaran = guru.mataPelajaran
             alamat = guru.alamat
+            jabatan = guru.jabatan
         }
         guruDAOToModel(dao)
     }
@@ -40,7 +41,8 @@ class GuruRepository : IGuruRepository {
         noTelepon: String,
         anakWali: String,
         mataPelajaran: String,
-        alamat: String
+        alamat: String,
+        jabatan : String
     ): Boolean = suspendTransaction {
 
         val guru = GuruDAO.findById(id.toInt())
@@ -52,6 +54,7 @@ class GuruRepository : IGuruRepository {
         guru.anakWali = anakWali
         guru.mataPelajaran = mataPelajaran
         guru.alamat = alamat
+        guru.jabatan = jabatan
 
         true
     }

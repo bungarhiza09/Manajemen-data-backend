@@ -10,5 +10,6 @@ object GuruTable : IntIdTable("guru") {
     val anak_wali = varchar("anak_wali", 255)
     val mata_pelajaran = varchar("mata_pelajaran", 100)
     val alamat = text("alamat")
+    val jabatan = varchar("jabatan", 255)
 
 }

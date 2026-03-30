@@ -10,5 +10,6 @@ data class Guru(
     val noTelepon: String,
     val anakWali: String,
     val mataPelajaran: String,
-    val alamat: String
+    val alamat: String,
+    val jabatan: String,
 )

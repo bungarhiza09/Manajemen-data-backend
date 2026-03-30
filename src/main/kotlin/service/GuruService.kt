@@ -34,7 +34,8 @@ class GuruService(
             request.noTelepon,
             request.anakWali,
             request.mataPelajaran,
-            request.alamat
+            request.alamat,
+            request.jabatan
         )
     }
 
@@ -59,7 +60,8 @@ class GuruService(
                 noTelepon = guru.noTelepon,
                 anakWali = guru.anakWali,
                 mataPelajaran = guru.mataPelajaran,
-                alamat = guru.alamat
+                alamat = guru.alamat,
+                jabatan = guru.jabatan
             )
         }
 
@@ -185,7 +187,8 @@ class GuruService(
                 noTelepon = guru.noTelepon,
                 anakWali = guru.anakWali,
                 mataPelajaran = guru.mataPelajaran,
-                alamat = guru.alamat
+                alamat = guru.alamat,
+                jabatan = guru.jabatan
             )
         }
 
