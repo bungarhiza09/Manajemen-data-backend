@@ -81,7 +81,7 @@ fun Application.module() {
         allowMethod(HttpMethod.Delete)
         allowMethod(HttpMethod.Options)
 
-        allowHeader(HttpHeaders.ContentType) 
+        allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.Authorization)
 
         allowCredentials = true
@@ -104,7 +104,6 @@ fun Application.module() {
     install(Koin) {
         modules(appModule)
     }
-
     configureDatabases()
     configureRouting()
 }

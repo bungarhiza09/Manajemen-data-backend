@@ -121,6 +121,11 @@ fun Application.configureRouting() {
             get("/export") {
                 siswaService.exportExcel(call)
             }
+
+            // 🔥 UPLOAD FILE (rapor / skl / ijazah)
+            post("/{id}/upload/{type}") {
+                siswaService.uploadFile(call)
+            }
         }
     }
 }

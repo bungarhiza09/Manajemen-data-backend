@@ -147,4 +147,23 @@ class SiswaRepository : ISiswaRepository {
     override suspend fun getAllForExport(): List<SiswaDAO> = suspendTransaction {
         SiswaDAO.all().toList()
     }
+
+    override suspend fun updateRaporFile(id: String, path: String): Boolean = suspendTransaction {
+        val siswa = SiswaDAO.findById(id.toInt()) ?: return@suspendTransaction false
+        siswa.raporFile = path
+        true
+    }
+
+    override suspend fun updateSklFile(id: String, path: String): Boolean = suspendTransaction {
+        val siswa = SiswaDAO.findById(id.toInt()) ?: return@suspendTransaction false
+        siswa.sklFile = path
+        true
+    }
+
+    override suspend fun updateIjazahFile(id: String, path: String): Boolean = suspendTransaction {
+        val siswa = SiswaDAO.findById(id.toInt()) ?: return@suspendTransaction false
+        siswa.ijazahFile = path
+        true
+    }
+
 }

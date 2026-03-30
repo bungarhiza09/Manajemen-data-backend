@@ -13,6 +13,9 @@ import java.io.File
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.ByteArrayOutputStream
 import io.ktor.http.*
+import io.ktor.http.content.PartData
+import io.ktor.http.content.forEachPart
+import io.ktor.http.content.streamProvider
 import io.ktor.server.response.*
 
 class SiswaService(
@@ -304,6 +307,71 @@ class SiswaService(
             bytes = outputStream.toByteArray(),
             contentType = ContentType.Application.OctetStream,
             status = HttpStatusCode.OK
+        )
+    }
+
+    suspend fun uploadFile(call: ApplicationCall) {
+        val id = call.parameters["id"]
+            ?: throw AppException(400, "ID tidak ditemukan")
+
+        val type = call.parameters["type"]
+            ?: throw AppException(400, "Tipe file tidak ditemukan")
+
+        if (type !in listOf("rapor", "skl", "ijazah")) {
+            throw AppException(400, "Tipe file tidak valid. Gunakan: rapor, skl, ijazah")
+        }
+
+        // Terima multipart
+        val multipart = call.receiveMultipart()
+        var fileName: String? = null
+        var fileBytes: ByteArray? = null
+
+        multipart.forEachPart { part ->
+            if (part is PartData.FileItem) {
+                val originalName = part.originalFileName ?: "file.pdf"
+                val ext = originalName.substringAfterLast(".", "pdf")
+
+                // Validasi hanya PDF
+                if (ext.lowercase() != "pdf") {
+                    throw AppException(400, "Hanya file PDF yang diperbolehkan")
+                }
+
+                fileName = "${type}_${id}_${System.currentTimeMillis()}.$ext"
+                fileBytes = part.streamProvider().readBytes()
+            }
+            part.dispose()
+        }
+
+        if (fileBytes == null || fileName == null) {
+            throw AppException(400, "File tidak ditemukan dalam request")
+        }
+
+        // Simpan file ke folder uploads/
+        val uploadDir = File("uploads")
+        if (!uploadDir.exists()) uploadDir.mkdirs()
+
+        val savedFile = File(uploadDir, fileName!!)
+        savedFile.writeBytes(fileBytes!!)
+
+        val filePath = "uploads/$fileName"
+
+        // Update path di database sesuai tipe
+        val success = when (type) {
+            "rapor"  -> siswaRepository.updateRaporFile(id, filePath)
+            "skl"    -> siswaRepository.updateSklFile(id, filePath)
+            "ijazah" -> siswaRepository.updateIjazahFile(id, filePath)
+            else     -> false
+        }
+
+        if (!success) throw AppException(404, "Siswa tidak ditemukan")
+
+        call.respond(
+            HttpStatusCode.OK,
+            mapOf(
+                "status" to "success",
+                "message" to "File berhasil diupload",
+                "path" to filePath
+            )
         )
     }
 }

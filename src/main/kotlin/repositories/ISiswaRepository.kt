@@ -41,4 +41,10 @@ interface ISiswaRepository {
     suspend fun getStats(): Map<String, Int>
 
     suspend fun getAllForExport(): List<SiswaDAO>
+
+    suspend fun updateRaporFile(id: String, path: String): Boolean
+
+    suspend fun updateSklFile(id: String, path: String): Boolean
+
+    suspend fun updateIjazahFile(id: String, path: String): Boolean
 }
