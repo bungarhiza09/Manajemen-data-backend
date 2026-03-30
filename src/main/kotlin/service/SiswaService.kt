@@ -64,17 +64,36 @@ class SiswaService(
 
         val siswaList = siswaRepository.getAll(limit, offset)
 
+        val siswaWithMeta = siswaList.map { siswa ->
+            SiswaResponse(
+                id = siswa.id,
+                namaLengkap = siswa.namaLengkap,
+                jurusan = siswa.jurusan,
+                nisn = siswa.nisn,
+                nis = siswa.nis,
+                kelas = siswa.kelas,
+                tanggalLahir = siswa.tanggalLahir.toString(),
+                alamat = siswa.alamat,
+                noWaOrtu = siswa.noWaOrtu,
+                status = siswa.status,
+                raporFile = siswa.raporFile,
+                sklFile = siswa.sklFile,
+                ijazahFile = siswa.ijazahFile
+            )
+        }
+
+
         val hasMore = siswaList.size == limit
 
         call.respond(
             DataResponse(
                 status = "success",
                 message = "Berhasil mengambil data siswa",
-                data = mapOf(
-                    "siswa" to siswaList,
-                    "limit" to limit,
-                    "offset" to offset,
-                    "hasMore" to hasMore
+                data = SiswaListResponse(
+                    posts = siswaWithMeta,
+                    limit = limit,
+                    offset = offset,
+                    hasMore = hasMore
                 )
             )
         )
@@ -178,11 +197,29 @@ class SiswaService(
             offset
         )
 
+        val siswaWithMeta = data.map { siswa ->
+            SiswaResponse(
+                id = siswa.id,
+                namaLengkap = siswa.namaLengkap,
+                jurusan = siswa.jurusan,
+                nisn = siswa.nisn,
+                nis = siswa.nis,
+                kelas = siswa.kelas,
+                tanggalLahir = siswa.tanggalLahir.toString(),
+                alamat = siswa.alamat,
+                noWaOrtu = siswa.noWaOrtu,
+                status = siswa.status,
+                raporFile = siswa.raporFile,
+                sklFile = siswa.sklFile,
+                ijazahFile = siswa.ijazahFile
+            )
+        }
+
         call.respond(
             DataResponse(
                 status = "success",
                 message = "Berhasil mencari data",
-                data = mapOf("siswa" to data)
+                data = mapOf("siswa" to siswaWithMeta)
             )
         )
     }
