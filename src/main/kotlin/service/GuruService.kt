@@ -201,7 +201,16 @@ class GuruService(
         )
     }
 
-    suspend fun getTotalGuru(): Long {
-        return guruRepository.getTotalGuru()
+    suspend fun getTotalGuru(call: ApplicationCall) {
+
+        val total = guruRepository.getTotalGuru()
+
+        call.respond(
+            DataResponse(
+                status = "success",
+                message = "Berhasil mengambil total guru",
+                data = mapOf("total" to total)
+            )
+        )
     }
 }
