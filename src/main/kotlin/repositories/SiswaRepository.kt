@@ -32,6 +32,9 @@ class SiswaRepository : ISiswaRepository {
             alamat = siswa.alamat
             noWaOrtu = siswa.noWaOrtu
             status = siswa.status
+            raporFile = siswa.raporFile
+            sklFile = siswa.sklFile
+            ijazahFile = siswa.ijazahFile
         }
         siswaDAOToModel(dao)
     }
