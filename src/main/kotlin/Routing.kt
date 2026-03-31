@@ -78,7 +78,7 @@ fun Application.configureRouting() {
             get("/total") {
                 guruService.getTotalGuru(call)
             }
-            
+
             delete("/{id}") {
                 guruService.delete(call)
             }
