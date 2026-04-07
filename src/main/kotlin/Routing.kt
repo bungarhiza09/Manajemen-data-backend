@@ -63,6 +63,10 @@ fun Application.configureRouting() {
                 guruService.search(call)
             }
 
+            get("/total") {
+                guruService.getTotalGuru(call)
+            }
+
             get("/{id}") {
                 guruService.getById(call)
             }
@@ -73,10 +77,6 @@ fun Application.configureRouting() {
 
             put("/{id}") {
                 guruService.put(call)
-            }
-
-            get("/total") {
-                guruService.getTotalGuru(call)
             }
 
             delete("/{id}") {
