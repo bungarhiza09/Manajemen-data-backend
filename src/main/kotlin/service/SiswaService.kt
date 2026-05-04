@@ -3,10 +3,14 @@ package org.delcom.service
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import org.delcom.data.*
 import org.delcom.entities.Siswa
+import org.delcom.helpers.RoleClaims
+import org.delcom.helpers.Roles
 import org.delcom.helpers.ValidatorHelper
 import org.delcom.repositories.SiswaRepository
 import java.io.File
@@ -16,7 +20,6 @@ import io.ktor.http.*
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
 import io.ktor.http.content.streamProvider
-import io.ktor.server.response.*
 
 class SiswaService(
     private val siswaRepository: SiswaRepository
@@ -62,39 +65,20 @@ class SiswaService(
 
     suspend fun getAll(call: ApplicationCall) {
 
-        val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 10
+        val limit  = call.request.queryParameters["limit"]?.toIntOrNull()  ?: 10
         val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0
 
-        val siswaList = siswaRepository.getAll(limit, offset)
-
-        val siswaWithMeta = siswaList.map { siswa ->
-            SiswaResponse(
-                id = siswa.id,
-                namaLengkap = siswa.namaLengkap,
-                jurusan = siswa.jurusan,
-                nisn = siswa.nisn,
-                nis = siswa.nis,
-                kelas = siswa.kelas,
-                tanggalLahir = siswa.tanggalLahir.toString(),
-                alamat = siswa.alamat,
-                noWaOrtu = siswa.noWaOrtu,
-                status = siswa.status,
-                raporFile = siswa.raporFile,
-                sklFile = siswa.sklFile,
-                ijazahFile = siswa.ijazahFile
-            )
-        }
-
-
-        val hasMore = siswaList.size == limit
+        val siswaList    = siswaRepository.getAll(limit, offset)
+        val siswaWithMeta = siswaList.map { it.toResponse() }
+        val hasMore      = siswaList.size == limit
 
         call.respond(
             DataResponse(
-                status = "success",
+                status  = "success",
                 message = "Berhasil mengambil data siswa",
-                data = SiswaListResponse(
-                    siswa = siswaWithMeta,
-                    limit = limit,
+                data    = SiswaListResponse(
+                    siswa  = siswaWithMeta,
+                    limit  = limit,
                     offset = offset,
                     hasMore = hasMore
                 )
@@ -112,17 +96,16 @@ class SiswaService(
 
         call.respond(
             DataResponse(
-                status = "success",
+                status  = "success",
                 message = "Berhasil mengambil data",
-                data = mapOf("siswa" to siswa)
+                data    = mapOf("siswa" to siswa)
             )
         )
     }
 
     suspend fun post(call: ApplicationCall) {
 
-        val request = call.receive<SiswaRequest>()
-
+        val request   = call.receive<SiswaRequest>()
         val validator = ValidatorHelper(request.toMap())
         validator.required("namaLengkap")
         validator.required("nisn")
@@ -133,130 +116,140 @@ class SiswaService(
 
         call.respond(
             DataResponse(
-                status = "success",
+                status  = "success",
                 message = "Berhasil menambah siswa",
-                data = mapOf("siswa" to siswa)
+                data    = mapOf("siswa" to siswa)
             )
         )
     }
 
     suspend fun put(call: ApplicationCall) {
 
-        val id = call.parameters["id"]
-            ?: throw AppException(400, "ID tidak valid")
-
+        val id      = call.parameters["id"] ?: throw AppException(400, "ID tidak valid")
         val request = call.receive<SiswaRequest>()
 
-        val isUpdated = updateSiswa(id, request)
-
-        if (!isUpdated) {
-            throw AppException(400, "Gagal update siswa")
-        }
+        if (!updateSiswa(id, request)) throw AppException(400, "Gagal update siswa")
 
         call.respond(
             DataResponse(
-                status = "success",
+                status  = "success",
                 message = "Berhasil mengubah data",
-                data = mapOf("message" to "Siswa berhasil diupdate")
+                data    = mapOf("message" to "Siswa berhasil diupdate")
             )
         )
     }
 
     suspend fun delete(call: ApplicationCall) {
 
-        val id = call.parameters["id"]
-            ?: throw AppException(400, "ID tidak valid")
+        val id = call.parameters["id"] ?: throw AppException(400, "ID tidak valid")
 
-        val isDeleted = deleteSiswa(id)
-
-        if (!isDeleted) {
-            throw AppException(400, "Gagal delete siswa")
-        }
+        if (!deleteSiswa(id)) throw AppException(400, "Gagal delete siswa")
 
         call.respond(
             DataResponse(
-                status = "success",
+                status  = "success",
                 message = "Berhasil menghapus data",
-                data = mapOf("message" to "Siswa berhasil dihapus")
+                data    = mapOf("message" to "Siswa berhasil dihapus")
             )
         )
     }
 
-    // 🔍 SEARCH + SORT
     suspend fun search(call: ApplicationCall) {
 
         val keyword = call.request.queryParameters["keyword"]
-        val sortBy = call.request.queryParameters["sortBy"]
-        val order = call.request.queryParameters["order"] ?: "desc"
+        val sortBy  = call.request.queryParameters["sortBy"]
+        val order   = call.request.queryParameters["order"]  ?: "desc"
+        val limit   = call.request.queryParameters["limit"]?.toIntOrNull()  ?: 10
+        val offset  = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0
 
-        val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 10
-        val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0
-
-        val data = siswaRepository.search(
-            keyword,
-            sortBy,
-            order,
-            limit,
-            offset
-        )
-
-        val siswaWithMeta = data.map { siswa ->
-            SiswaResponse(
-                id = siswa.id,
-                namaLengkap = siswa.namaLengkap,
-                jurusan = siswa.jurusan,
-                nisn = siswa.nisn,
-                nis = siswa.nis,
-                kelas = siswa.kelas,
-                tanggalLahir = siswa.tanggalLahir.toString(),
-                alamat = siswa.alamat,
-                noWaOrtu = siswa.noWaOrtu,
-                status = siswa.status,
-                raporFile = siswa.raporFile,
-                sklFile = siswa.sklFile,
-                ijazahFile = siswa.ijazahFile
-            )
-        }
+        val data = siswaRepository.search(keyword, sortBy, order, limit, offset)
 
         call.respond(
             DataResponse(
-                status = "success",
+                status  = "success",
                 message = "Berhasil mencari data",
-                data = mapOf("siswa" to siswaWithMeta)
+                data    = mapOf("siswa" to data.map { it.toResponse() })
             )
         )
     }
 
-    // 📥 DOWNLOAD FILE
+    // ═══════════════════════════════════════════════════════════════
+    // DOWNLOAD SKL — dua skenario, satu endpoint
+    //
+    // Skenario 1 — ADMIN
+    //   Token berisi  : role = "admin"
+    //   Bisa download : SKL siswa SIAPAPUN (semua {id})
+    //
+    // Skenario 2 — SISWA
+    //   Token berisi  : role = "siswa", userId = id siswa yang login
+    //   Bisa download : HANYA SKL MILIKNYA SENDIRI
+    //                   → {id} di URL harus sama dengan userId di token
+    //   Tipe yang boleh didownload siswa: hanya "skl"
+    //   (rapor dan ijazah hanya bisa didownload admin)
+    // ═══════════════════════════════════════════════════════════════
     suspend fun download(call: ApplicationCall) {
 
-        val id = call.parameters["id"]
-            ?: throw AppException(400, "ID tidak valid")
+        val id   = call.parameters["id"]   ?: throw AppException(400, "ID tidak valid")
+        val type = call.parameters["type"] ?: throw AppException(400, "Tipe file tidak valid")
 
-        val type = call.parameters["type"]
-            ?: throw AppException(400, "Tipe file tidak valid")
+        // Baca info dari JWT
+        val principal  = call.principal<JWTPrincipal>()
+        val role       = principal?.payload?.getClaim(RoleClaims.ROLE_CLAIM)?.asString()
+        val tokenUserId = principal?.payload?.getClaim(RoleClaims.USER_ID)?.asString()
+            ?: principal?.payload?.subject
 
+        when {
+            // ── ADMIN: boleh download semua tipe, semua siswa ────────
+            role == Roles.ADMIN -> {
+                // tidak ada pembatasan tambahan
+            }
+
+            // ── SISWA: hanya boleh download SKL miliknya sendiri ────
+            role == Roles.SISWA -> {
+
+                // Siswa hanya boleh download tipe "skl"
+                if (type != "skl") {
+                    throw AppException(
+                        403,
+                        "Siswa hanya dapat mendownload SKL. " +
+                                "Untuk rapor atau ijazah, hubungi admin."
+                    )
+                }
+
+                // ID di URL harus cocok dengan ID siswa yang login
+                if (tokenUserId != id) {
+                    throw AppException(
+                        403,
+                        "Anda tidak memiliki izin untuk mendownload SKL siswa lain."
+                    )
+                }
+            }
+
+            // ── Role tidak dikenal ───────────────────────────────────
+            else -> {
+                throw AppException(403, "Akses ditolak. Role tidak dikenal.")
+            }
+        }
+
+        // Ambil data siswa dari database
         val siswa = siswaRepository.getById(id)
             ?: throw AppException(404, "Siswa tidak ditemukan")
 
+        // Tentukan path file berdasarkan tipe
         val filePath = when (type) {
-            "rapor" -> siswa.raporFile
-            "skl" -> siswa.sklFile
+            "rapor"  -> siswa.raporFile
+            "skl"    -> siswa.sklFile
             "ijazah" -> siswa.ijazahFile
-            else -> null
-        } ?: throw AppException(404, "File tidak tersedia")
+            else     -> throw AppException(400, "Tipe tidak valid. Gunakan: rapor, skl, atau ijazah")
+        } ?: throw AppException(404, "File $type belum tersedia untuk siswa ini")
 
         val file = File(filePath)
-
-        if (!file.exists()) {
-            throw AppException(404, "File tidak ditemukan")
-        }
+        if (!file.exists()) throw AppException(404, "File tidak ditemukan di server")
 
         call.response.header(
             "Content-Disposition",
             "attachment; filename=\"${file.name}\""
         )
-
         call.respondFile(file)
     }
 
@@ -266,21 +259,19 @@ class SiswaService(
 
         call.respond(
             DataResponse(
-                status = "success",
+                status  = "success",
                 message = "Berhasil ambil statistik",
-                data = stats
+                data    = stats
             )
         )
     }
 
     suspend fun exportExcel(call: ApplicationCall) {
 
-        val data = siswaRepository.getAllForExport()
-
+        val data     = siswaRepository.getAllForExport()
         val workbook = XSSFWorkbook()
-        val sheet = workbook.createSheet("Data Siswa")
+        val sheet    = workbook.createSheet("Data Siswa")
 
-        // HEADER
         val header = sheet.createRow(0)
         header.createCell(0).setCellValue("NISN")
         header.createCell(1).setCellValue("Nama")
@@ -288,10 +279,8 @@ class SiswaService(
         header.createCell(3).setCellValue("Jurusan")
         header.createCell(4).setCellValue("Status")
 
-        // DATA
         data.forEachIndexed { index, siswa ->
             val row = sheet.createRow(index + 1)
-
             row.createCell(0).setCellValue(siswa.nisn)
             row.createCell(1).setCellValue(siswa.namaLengkap)
             row.createCell(2).setCellValue(siswa.kelas)
@@ -304,24 +293,21 @@ class SiswaService(
         workbook.close()
 
         call.respondBytes(
-            bytes = outputStream.toByteArray(),
+            bytes       = outputStream.toByteArray(),
             contentType = ContentType.Application.OctetStream,
-            status = HttpStatusCode.OK
+            status      = HttpStatusCode.OK
         )
     }
 
     suspend fun uploadFile(call: ApplicationCall) {
-        val id = call.parameters["id"]
-            ?: throw AppException(400, "ID tidak ditemukan")
 
-        val type = call.parameters["type"]
-            ?: throw AppException(400, "Tipe file tidak ditemukan")
+        val id   = call.parameters["id"]   ?: throw AppException(400, "ID tidak ditemukan")
+        val type = call.parameters["type"] ?: throw AppException(400, "Tipe file tidak ditemukan")
 
         if (type !in listOf("rapor", "skl", "ijazah")) {
             throw AppException(400, "Tipe file tidak valid. Gunakan: rapor, skl, ijazah")
         }
 
-        // Terima multipart
         val multipart = call.receiveMultipart()
         var fileName: String? = null
         var fileBytes: ByteArray? = null
@@ -331,12 +317,11 @@ class SiswaService(
                 val originalName = part.originalFileName ?: "file.pdf"
                 val ext = originalName.substringAfterLast(".", "pdf")
 
-                // Validasi hanya PDF
                 if (ext.lowercase() != "pdf") {
                     throw AppException(400, "Hanya file PDF yang diperbolehkan")
                 }
 
-                fileName = "${type}_${id}_${System.currentTimeMillis()}.$ext"
+                fileName  = "${type}_${id}_${System.currentTimeMillis()}.$ext"
                 fileBytes = part.streamProvider().readBytes()
             }
             part.dispose()
@@ -346,7 +331,6 @@ class SiswaService(
             throw AppException(400, "File tidak ditemukan dalam request")
         }
 
-        // Simpan file ke folder uploads/
         val uploadDir = File("uploads")
         if (!uploadDir.exists()) uploadDir.mkdirs()
 
@@ -355,7 +339,6 @@ class SiswaService(
 
         val filePath = "uploads/$fileName"
 
-        // Update path di database sesuai tipe
         val success = when (type) {
             "rapor"  -> siswaRepository.updateRaporFile(id, filePath)
             "skl"    -> siswaRepository.updateSklFile(id, filePath)
@@ -368,10 +351,27 @@ class SiswaService(
         call.respond(
             HttpStatusCode.OK,
             mapOf(
-                "status" to "success",
+                "status"  to "success",
                 "message" to "File berhasil diupload",
-                "path" to filePath
+                "path"    to filePath
             )
         )
     }
+
+    // ── Extension function biar tidak repetitif ──────────────────
+    private fun Siswa.toResponse() = SiswaResponse(
+        id           = this.id,
+        namaLengkap  = this.namaLengkap,
+        jurusan      = this.jurusan,
+        nisn         = this.nisn,
+        nis          = this.nis,
+        kelas        = this.kelas,
+        tanggalLahir = this.tanggalLahir.toString(),
+        alamat       = this.alamat,
+        noWaOrtu     = this.noWaOrtu,
+        status       = this.status,
+        raporFile    = this.raporFile,
+        sklFile      = this.sklFile,
+        ijazahFile   = this.ijazahFile
+    )
 }
