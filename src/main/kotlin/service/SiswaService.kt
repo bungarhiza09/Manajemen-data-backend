@@ -374,4 +374,75 @@ class SiswaService(
         sklFile      = this.sklFile,
         ijazahFile   = this.ijazahFile
     )
+
+    suspend fun importExcel(call: ApplicationCall) {
+        val multipart = call.receiveMultipart()
+        var fileBytes: ByteArray? = null
+
+        multipart.forEachPart { part ->
+            if (part is PartData.FileItem) {
+                fileBytes = part.streamProvider().readBytes()
+            }
+            part.dispose()
+        }
+
+        if (fileBytes == null) throw AppException(400, "File tidak ditemukan")
+
+        val workbook = XSSFWorkbook(fileBytes!!.inputStream())
+        val sheet = workbook.getSheetAt(0)
+
+        var imported = 0
+        var skipped = 0
+
+        // Baris 0 = header, mulai dari baris 1
+        for (i in 1..sheet.lastRowNum) {
+            val row = sheet.getRow(i) ?: continue
+
+            fun cell(col: Int) = row.getCell(col)?.toString()?.trim() ?: ""
+
+            val nisn = cell(0)
+            val nis = cell(1)
+            val namaLengkap = cell(2)
+            val kelas = cell(3)
+            val jurusan = cell(4)
+            val tanggalLahir = cell(5)
+            val alamat = cell(6)
+            val noWaOrtu = cell(7)
+            val status = cell(8).ifEmpty { "aktif" }
+
+            // Skip baris kosong
+            if (namaLengkap.isEmpty() || nisn.isEmpty()) { skipped++; continue }
+
+            val request = SiswaRequest(
+                namaLengkap = namaLengkap,
+                nisn = nisn,
+                nis = nis,
+                kelas = kelas,
+                jurusan = jurusan,
+                tanggalLahir = tanggalLahir,
+                alamat = alamat,
+                noWaOrtu = noWaOrtu,
+                status = status
+            )
+
+            try {
+                siswaRepository.create(request.toEntity())
+                imported++
+            } catch (e: Exception) {
+                skipped++
+            }
+        }
+
+        workbook.close()
+
+        call.respond(
+            DataResponse(
+                status = "success",
+                message = "Import selesai",
+                data = mapOf("imported" to imported, "skipped" to skipped)
+            )
+        )
+    }
+
+
 }

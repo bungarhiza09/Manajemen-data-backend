@@ -50,89 +50,45 @@ fun Application.configureRouting() {
 
     routing {
 
-        // Health check — bebas akses tanpa token
+        // HEALTH CHECK
         get("/") {
             call.respondText("API Sistem Informasi SMKN 3 Balige Berjalan")
         }
 
-        // ════════════════════════════════════════════════════════
-        // SEMUA ROUTE DI BAWAH INI BUTUH TOKEN (Authorization header)
-        // ════════════════════════════════════════════════════════
-        authenticate(JWTConstants.NAME) {
+        // ─────────────────────────────────────────────
+        // 🔥 SEMUA ROUTE TANPA AUTH SEMENTARA
+        // ─────────────────────────────────────────────
 
-            // ────────────────────────────────────────────────────
-            // GURU — hanya admin yang boleh akses
-            // ────────────────────────────────────────────────────
-            route("/guru") {
+        route("/guru") {
+            get { guruService.getAll(call) }
+            get("/search") { guruService.search(call) }
+            get("/total") { guruService.getTotalGuru(call) }
+            get("/{id}") { guruService.getById(call) }
+            post { guruService.post(call) }
+            put("/{id}") { guruService.put(call) }
+            delete("/{id}") { guruService.delete(call) }
+            get("/export") { guruService.exportExcel(call) }    // ✅ tambah ini
+            post("/import") { guruService.importExcel(call) }
+        }
 
-                get            { requireAdmin(call) { guruService.getAll(call) } }
-                get("/search") { requireAdmin(call) { guruService.search(call) } }
-                get("/total")  { requireAdmin(call) { guruService.getTotalGuru(call) } }
-                get("/{id}")   { requireAdmin(call) { guruService.getById(call) } }
-                post           { requireAdmin(call) { guruService.post(call) } }
-                put("/{id}")   { requireAdmin(call) { guruService.put(call) } }
-                delete("/{id}"){ requireAdmin(call) { guruService.delete(call) } }
+        route("/siswa") {
+            get { siswaService.getAll(call) }
+            get("/search") { siswaService.search(call) }
+            get("/stats") { siswaService.getStats(call) }
+            get("/export") { siswaService.exportExcel(call) }
+            post("/import") { siswaService.importExcel(call) }
+            get("/{id}") { siswaService.getById(call) }
+            post { siswaService.post(call) }
+            put("/{id}") { siswaService.put(call) }
+            delete("/{id}") { siswaService.delete(call) }
+
+            post("/{id}/upload/{type}") {
+                siswaService.uploadFile(call)
             }
 
-            // ────────────────────────────────────────────────────
-            // SISWA — CRUD hanya admin
-            // ────────────────────────────────────────────────────
-            route("/siswa") {
-
-                get            { requireAdmin(call) { siswaService.getAll(call) } }
-                get("/search") { requireAdmin(call) { siswaService.search(call) } }
-                get("/stats")  { requireAdmin(call) { siswaService.getStats(call) } }
-                get("/export") { requireAdmin(call) { siswaService.exportExcel(call) } }
-                get("/{id}")   { requireAdmin(call) { siswaService.getById(call) } }
-                post           { requireAdmin(call) { siswaService.post(call) } }
-                put("/{id}")   { requireAdmin(call) { siswaService.put(call) } }
-                delete("/{id}"){ requireAdmin(call) { siswaService.delete(call) } }
-
-                // Upload file — hanya admin
-                post("/{id}/upload/{type}") {
-                    requireAdmin(call) { siswaService.uploadFile(call) }
-                }
-
-                // ─────────────────────────────────────────────────
-                // DOWNLOAD SKL — ada DUA skenario:
-                //
-                // 1. Admin   → bisa download SKL siswa SIAPAPUN
-                //              GET /siswa/{id}/download/skl
-                //              Header: Authorization: Bearer <token_admin>
-                //
-                // 2. Siswa   → hanya bisa download SKL MILIKNYA SENDIRI
-                //              GET /siswa/{id}/download/skl
-                //              Header: Authorization: Bearer <token_siswa>
-                //              (validasi id di token harus cocok dengan {id} di URL)
-                //
-                // Keduanya pakai endpoint yang SAMA — bedanya hanya dicek di dalam
-                // siswaService.download() berdasarkan role di JWT.
-                // ─────────────────────────────────────────────────
-                get("/{id}/download/{type}") {
-                    siswaService.download(call)
-                }
+            get("/{id}/download/{type}") {
+                siswaService.download(call)
             }
         }
     }
-}
-
-// ─────────────────────────────────────────────────────────────────
-// Helper: cek apakah yang request adalah admin.
-// Kalau bukan, langsung tolak dengan 403 Forbidden.
-// ─────────────────────────────────────────────────────────────────
-private suspend fun requireAdmin(call: ApplicationCall, block: suspend () -> Unit) {
-    val principal = call.principal<JWTPrincipal>()
-    val role = principal?.payload?.getClaim(RoleClaims.ROLE_CLAIM)?.asString()
-
-    if (role != Roles.ADMIN) {
-        call.respond(
-            HttpStatusCode.Forbidden,
-            mapOf(
-                "status" to "error",
-                "message" to "Akses ditolak. Hanya admin yang bisa melakukan ini."
-            )
-        )
-        return
-    }
-    block()
 }
