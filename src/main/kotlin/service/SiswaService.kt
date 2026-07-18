@@ -192,50 +192,9 @@ class SiswaService(
         val id   = call.parameters["id"]   ?: throw AppException(400, "ID tidak valid")
         val type = call.parameters["type"] ?: throw AppException(400, "Tipe file tidak valid")
 
-        // Baca info dari JWT
-        val principal  = call.principal<JWTPrincipal>()
-        val role       = principal?.payload?.getClaim(RoleClaims.ROLE_CLAIM)?.asString()
-        val tokenUserId = principal?.payload?.getClaim(RoleClaims.USER_ID)?.asString()
-            ?: principal?.payload?.subject
-
-        when {
-            // ── ADMIN: boleh download semua tipe, semua siswa ────────
-            role == Roles.ADMIN -> {
-                // tidak ada pembatasan tambahan
-            }
-
-            // ── SISWA: hanya boleh download SKL miliknya sendiri ────
-            role == Roles.SISWA -> {
-
-                // Siswa hanya boleh download tipe "skl"
-                if (type != "skl") {
-                    throw AppException(
-                        403,
-                        "Siswa hanya dapat mendownload SKL. " +
-                                "Untuk rapor atau ijazah, hubungi admin."
-                    )
-                }
-
-                // ID di URL harus cocok dengan ID siswa yang login
-                if (tokenUserId != id) {
-                    throw AppException(
-                        403,
-                        "Anda tidak memiliki izin untuk mendownload SKL siswa lain."
-                    )
-                }
-            }
-
-            // ── Role tidak dikenal ───────────────────────────────────
-            else -> {
-                throw AppException(403, "Akses ditolak. Role tidak dikenal.")
-            }
-        }
-
-        // Ambil data siswa dari database
         val siswa = siswaRepository.getById(id)
             ?: throw AppException(404, "Siswa tidak ditemukan")
 
-        // Tentukan path file berdasarkan tipe
         val filePath = when (type) {
             "rapor"  -> siswa.raporFile
             "skl"    -> siswa.sklFile
